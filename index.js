@@ -7,6 +7,11 @@ const fs = require('fs');
 
 const User = require('./user.model')
 
+app.get('*', (req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*')
+  next()
+})
+
 app.get('/findPublicKey', (req, res) => {
   const bsn = req.headers.bsn
   User.findOne({bsn: bsn}).then((user) => {
