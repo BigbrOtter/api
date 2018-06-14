@@ -21,10 +21,15 @@ app.get('/findPublicKey', (req, res) => {
 })
 
 app.get('/register', (req, res) => {
-  const bsn = req.headers.bsn
-  const naam = req.headers.naam
+  const bsn = req.headers.bsn || req.query.bsn
+  const naam = req.headers.naam || req.query.naam
+  if(typeof bsn === 'undefined' || typeof naam === 'undefined'){
+    return res.status(200).json({
+      error: 'bsn & naam zijn vereist.'
+    }).end()
+  }
   User.findOne({bsn: bsn}).then((user) => {
-    console.log(`Found user '${naam} with BSN '${bsn}' in the DB.`)
+    console.log(`Found user '${naam}' with BSN '${bsn}' in the DB.`)
     res.status(200).json({
       private: user.private,
       cert: user.cert
