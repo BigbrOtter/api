@@ -1,9 +1,9 @@
 const mongoose = require('mongoose')
 
-const user = process.env.USER || 'root'
-const pass = process.env.PASS || 'password'
-const host = process.env.HOST || 'localhost'
-const port = process.env.PORT || 5000
+const user = process.env.DBUSER || 'root'
+const pass = process.env.DBPASS || 'password'
+const host = process.env.DBHOST || 'localhost'
+const port = process.env.DBPORT || 5000
 const dbname = process.env.DBNAME || 'mongodb'
 
 mongoose.connect(`mongodb://${user}:${pass}@${host}:${port}/${dbname}`)
