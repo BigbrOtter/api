@@ -13,7 +13,12 @@ app.get('*', (req, res, next) => {
 })
 
 app.get('/findPublicKey', (req, res) => {
-  const bsn = req.headers.bsn
+  const bsn = req.headers.bsn || req.query.bsn
+  if(typeof bsn === 'undefined'){
+    return res.status(200).json({
+      error: 'bsn is vereist.'
+    }).end()
+  }
   User.findOne({bsn: bsn}).then((user) => {
     res.status(200).json({
       public: user.public
