@@ -29,7 +29,12 @@ app.get('*', (req, res, next) => {
 * Chat endpoints
 */
 
-// Maakt een nieuw chatbericht aan.
+/* Maakt een nieuw chatbericht aan.
+* @param {Number} steamer (BSN van welke transparant persoon je aan het bekijken bent)
+* @param {String} message (plaintext chatbericht)
+* @param {String} signature (encrypted met private key sha256-hash van de plaintext message)
+* @param {String} cert (uitgegeven door TheCircle)
+*/
 app.post('/chat', (req, res) => {
   const cert = req.body.cert
   // Kijken of het certificaat geldig is, of het een user van TheCircle is.
@@ -40,19 +45,19 @@ app.post('/chat', (req, res) => {
       decryptSignature(signature, publicKey).then((hash1) => {
         const message = req.body.message
         const hash2 = crypto.createHash('sha256').update(message).digest('hex')
+        // Kijken of de hash geldig is, als beide hashes gelijk zijn is het bericht integer.
         if(hash1 === hash2){
-          process.env.TZ = 'Europe/Amsterdam'
           const newChat = new Chat({
             bsn: user.bsn,
             streamer: req.body.streamer,
-            timestamp: + new Date(), // unix timestamp
+            timestamp: Math.floor(new Date() / 1000),
             message: message
           })
           newChat.save((err) => {
             if (err) throw err
             console.log(`Chat is added to the MongoDB.`)
           })
-          res.status(200).json({status: 'OK'}).end()
+          res.status(200).json({status: 'OK', chat: newChat}).end()
         } else {
           res.status(400).json({error: `Hash van de message komt niet overeen met de signature.`}).end()
         }
@@ -70,49 +75,35 @@ app.post('/chat', (req, res) => {
   })
 })
 
-app.get('/chat', (req, res) => {
-  res.status(400).json({error: 'chat ophaal endpoint nog niet gerealiseerd.'}).end()
-})
-
 /*
-* Authenticatie endpoints
+* Geeft alle nieuw chats van een stream in JSON terug
+* @param {String} cert (uitgegeven door TheCircle)
+* @param {String} timestamp (timestamp van het laatste bericht dat je ontvangen hebt)
+* @param {Number} streamer (BSN van welke transparant persoon je aan het bekijken bent)
 */
-
-// DEBUG, deze is alleen voor onze test environment.
-app.get('/register', (req, res) => {
-  const bsn = req.headers.bsn || req.query.bsn
-  const naam = req.headers.naam || req.query.naam
-  if(typeof bsn === 'undefined' || typeof naam === 'undefined'){
-    return res.status(200).json({
-      error: 'bsn & naam zijn vereist.'
-    }).end()
-  }
-  User.findOne({bsn: bsn}).then((user) => {
-    console.log(`Found user '${naam}' with BSN '${bsn}' in the DB.`)
-    res.status(200).json({
-      private: user.private,
-      cert: user.cert
-    }).end()
-  }).catch(() => {
-    console.log(`Created new user '${naam} with BSN '${bsn}'`)
-    createKey().then((keys) => {
-      const cert = new NodeRSA(readServerKey('private')).encryptPrivate(keys.public, 'base64')
-      const newUser = new User({
-        bsn: bsn,
-        naam: naam,
-        private: keys.private,
-        public: keys.public,
-        cert: cert
+app.get('/chat', (req, res) => {
+  const cert = req.headers.cert
+  // Kijken of het certificaat geldig is, of het een user van TheCircle is.
+  decryptCert(cert, readServerKey('public')).then((publicKey) => {
+    // Chatberichten zoeken op basis van laatste timestamp vanuit de client
+    const timestamp = req.headers.timestamp
+    const streamer = req.headers.streamer
+    Chat.find({ timestamp: { $gt: timestamp }, streamer: streamer }).then((chats) => {
+      let chatArray = []
+      chats.forEach((chat) => {
+        chatArray.push({
+          message: chat.message,
+          timestamp: chat.timestamp
+        })
       })
-      newUser.save((err) => {
-        if (err) throw err
-        console.log(`user saved!`)
-      })
-      res.status(200).json({
-        private: keys.private,
-        cert: cert
-      }).end()
+      res.status(200).json(chatArray).end()
+    }).catch((error) => {
+      console.log(error)
+      res.status(400).json({error: `Geen nieuwe chats.`}).end()
     })
+  }).catch((error) => {
+    console.log(error)
+    res.status(400).json({error: `Certificaat '${cert}' is ongeldig.`}).end()
   })
 })
 
@@ -120,7 +111,11 @@ app.get('/register', (req, res) => {
 * Cryprografie functies
 */
 
-// Decrypt de signature naar een hash
+/*
+* Decrypt de signature naar een hash
+* @param {String} signature (encrypted sha256-hash met de private key)
+* @param {String} publicKey (RSA public key waarmee de hash ontsleuteld wordt)
+*/
 const decryptSignature = (signature, publicKey) => {
   return new Promise(function(resolve, reject) {
     const objectPublicPem = new NodeRSA(publicKey)
@@ -129,7 +124,11 @@ const decryptSignature = (signature, publicKey) => {
   })
 }
 
-// Maakt een digitale signature van data d.m.v. encryptie met de private key
+/*
+* Maakt een digitale signature van data d.m.v. encryptie met de private key
+* @param {String} data (plaintext data)
+* @param {String} privateKey (RSA private key waarmee de data versleuteld wordt)
+*/
 const createSignature = (data, privateKey) => {
   return new Promise((resolve, reject) => {
     let hash = crypto.createHash('sha256').update(data).digest('hex')
@@ -139,7 +138,11 @@ const createSignature = (data, privateKey) => {
   })
 }
 
-// Decrypt een certificaat om de public key te krijgen
+/*
+* Decrypt een certificaat om de public key te krijgen
+* @param {String} cert (cerificicaat dat meegestuurd wordt)
+* @param {String} publicKey (RSA public key waarmee het certificaat ontsleuteld wordt)
+*/
 const decryptCert = (cert, publicKey) => {
   return new Promise((resolve, reject) => {
     const objectPublicPem = new NodeRSA(publicKey)
@@ -148,21 +151,10 @@ const decryptCert = (cert, publicKey) => {
   })
 }
 
-// Maakt een RSA private & public key aan
-const createKey = () => {
-  return new Promise((resolve, reject) => {
-    const key = new NodeRSA()
-    key.generateKeyPair()
-    const publicPem = key.exportKey('pkcs1-public-pem')
-    const privatePem = key.exportKey('pkcs1-private-pem')
-    resolve({
-      private: privatePem,
-      public: publicPem
-    })
-  })
-}
-
-// Leest de server keys
+/*
+* Leest de server keys uit van het bestand of de process environment variablen
+* @param {String} type (private of public)
+*/
 const readServerKey = (type) => {
   const privateKey = process.env.privateKey || fs.readFileSync(`./certificate/private.pem`, {encoding: 'utf-8'})
   const publicKey = process.env.privateKey || fs.readFileSync(`./certificate/private.pem`, {encoding: 'utf-8'})

@@ -4,7 +4,7 @@ const Schema = mongoose.Schema
 const chatSchema = new Schema({
   bsn: Number, // huidige user
   streamer: Number, // streamer die bekeken wordt
-  timestamp: {type: Date, default: Date.now}, // de huidige inhoud
+  timestamp: String, // de huidige timestamp
   message: String // inhoud
 })
 
