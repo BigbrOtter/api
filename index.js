@@ -4,15 +4,21 @@ const NodeRSA = require('node-rsa')
 const crypto = require('crypto')
 const fs = require('fs')
 const bodyparser = require('body-parser')
+const dotenv = require('dotenv')
 
 const app = express()
-const DBUSER = process.env.DBUSER || process.argv[2] || 'root'
-const DBPASS = process.env.DBPASS || process.argv[3] || 'password'
-const DBHOST = process.env.DBHOST || process.argv[4] || 'localhost'
-const DBPORT = process.env.DBPORT || process.argv[5] || 5000
-const DBNAME = process.env.DBNAME || process.argv[6] || 'mongodb'
+dotenv.config()
+const DBUSER = process.env.DBUSER
+const DBPASS = process.env.DBPASS
+const DBHOST = process.env.DBHOST
+const DBPORT = process.env.DBPORT
+const DBNAME = process.env.DBNAME
 
-mongoose.connect(`mongodb://${DBUSER}:${DBPASS}@${DBHOST}:${DBPORT}/${DBNAME}`)
+mongoose.connect(`mongodb://${DBUSER}:${DBPASS}@${DBHOST}:${DBPORT}/${DBNAME}`).then(() => {
+  console.log(`MongoDB successfully connected to: '${DBHOST}:${DBPORT}/${DBNAME}', ${new Date()}`)
+}).catch((error) => {
+  console.log(`MongoDB connection error to: '${DBHOST}:${DBPORT}/${DBNAME}', ${error.message}, ${new Date()}`)
+})
 
 const User = require('./user.model')
 const Chat = require('./chat.model')
@@ -87,13 +93,14 @@ app.get('/chat', (req, res) => {
   decryptCert(cert, readServerKey('public')).then((publicKey) => {
     // Chatberichten zoeken op basis van laatste timestamp vanuit de client
     const timestamp = req.headers.timestamp
-    const streamer = req.headers.streamer
-    Chat.find({ timestamp: { $gt: timestamp }, streamer: streamer }).then((chats) => {
+    const streamer = parseInt(req.headers.streamer)
+    Chat.aggregate([{$match:{streamer: streamer,timestamp: {$gt: timestamp}}},{$lookup: {from: 'users',localField: 'bsn',foreignField: 'bsn',as: 'user'}}]).then((chats) => {
       let chatArray = []
       chats.forEach((chat) => {
         chatArray.push({
           message: chat.message,
-          timestamp: chat.timestamp
+          timestamp: chat.timestamp,
+          name: chat.user[0].naam
         })
       })
       res.status(200).json(chatArray).end()
@@ -167,5 +174,5 @@ const readServerKey = (type) => {
 
 const serverPort = process.env.PORT || 80
 app.listen(serverPort, () => {
-  console.log(`Server online op poort ${serverPort}`)
+  console.log(`Server online op poort ${serverPort}, ${new Date()}`)
 })

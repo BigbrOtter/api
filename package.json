@@ -18,10 +18,11 @@
   },
   "homepage": "https://github.com/BigbrOtter/api#readme",
   "dependencies": {
+    "body-parser": "^1.18.3",
+    "dotenv": "^6.0.0",
     "express": "^4.16.3",
     "mongoose": "^5.1.5",
-    "node-rsa": "^1.0.0",
-    "body-parser": "^1.18.3"
+    "node-rsa": "^1.0.0"
   },
   "devDependencies": {
     "mocha": "^5.2.0"
