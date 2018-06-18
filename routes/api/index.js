@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 // Routes
-const chatRoutes = require('chat')
+const chatRoutes = require('./chat')
 
 // Use Routes
 router.use('/chat', chatRoutes)
