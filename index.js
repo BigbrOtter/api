@@ -22,7 +22,7 @@ app.use(bodyparser.json())
 app.use(bodyparser.urlencoded({ extended: true }))
 
 // Routes
-app.get('*', (req, res, next) => {
+app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*')
   next()
 })
