@@ -3,7 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 // Routes
-const apiRoutes = require('api')
+const apiRoutes = require('./api')
 
 // Use Routes
 router.use('/api', apiRoutes)
