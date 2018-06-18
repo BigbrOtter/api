@@ -92,7 +92,10 @@ app.get('/chat', (req, res) => {
   // Kijken of het certificaat geldig is, of het een user van TheCircle is.
   decryptCert(cert, readServerKey('public')).then((publicKey) => {
     // Chatberichten zoeken op basis van laatste timestamp vanuit de client
-    const timestamp = req.headers.timestamp
+    let timestamp = req.headers.timestamp
+    if(typeof timestamp === 'undefined'){
+      timestamp = '0'
+    }
     const streamer = parseInt(req.headers.streamer)
     Chat.aggregate([{$match:{streamer: streamer,timestamp: {$gt: timestamp}}},{$lookup: {from: 'users',localField: 'bsn',foreignField: 'bsn',as: 'user'}}]).then((chats) => {
       let chatArray = []
