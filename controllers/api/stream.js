@@ -1,17 +1,18 @@
+const { User, Stream } = require('../../models')
 
-function getStreams () {
-
-}
-
-function getStream () {
+function getStreams (req, res) {
 
 }
 
-function postStream () {
+function getStream (req, res) {
 
 }
 
-function delStream () {
+function postStream (req, res) {
+
+}
+
+function delStream (req, res) {
 
 }
 
