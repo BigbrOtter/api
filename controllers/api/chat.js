@@ -29,17 +29,22 @@ function postChat (req, res) {
           newChat.save((err) => {
             if (err) throw err
           })
+          console.log(`OK, ${newChat}`)
           res.status(200).json({status: 'OK', chat: newChat}).end()
         } else {
+          console.log(`Hash van de message komt niet overeen met de signature.`)
           res.status(400).json({error: `Hash van de message komt niet overeen met de signature.`}).end()
         }
       }).catch((error) => {
+        console.log(`Signature '${signature}' is ongeldig, is niet te decrypted met de publicKey.`)
         res.status(400).json({error: `Signature '${signature}' is ongeldig, is niet te decrypted met de publicKey.`}).end()
       })
     }).catch((error) => {
+      console.log(`PublicKey '${publicKey}' is ongeldig, hij is niet gekoppeld aan een User.`)
       res.status(400).json({error: `PublicKey '${publicKey}' is ongeldig, hij is niet gekoppeld aan een User.`}).end()
     })
   }).catch((error) => {
+    console.log(`Certificaat '${cert}' is ongeldig.`)
     res.status(400).json({error: `Certificaat '${cert}' is ongeldig.`}).end()
   })
 }
@@ -71,9 +76,11 @@ function getChat (req, res) {
       })
       res.status(200).json(chatArray).end()
     }).catch((error) => {
-      res.status(400).json({error: `Geen nieuwe chats.`}).end()
+      console.log(`Geen nieuwe chats.`)
+      res.status(200).json({error: `Geen nieuwe chats.`}).end()
     })
   }).catch((error) => {
+    console.log(`Certificaat '${cert}' is ongeldig.`)
     res.status(400).json({error: `Certificaat '${cert}' is ongeldig.`}).end()
   })
 }
