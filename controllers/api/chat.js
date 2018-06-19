@@ -111,15 +111,18 @@ function getChats (req, res) {
           tempHash: crypto.createHash('sha256').update(JSON.stringify(chatArray)).digest('hex'), // TEMP, DEBUG, REMOVE IF PRODUCTION.
         }).end()
       }).catch((error) => {
+        console.log(error)
         console.log(`Error making the signature for the chats.`)
         res.status(400).json({error: `Error making the signature for the chats.`}).end()
       })
     }).catch((error) => {
+      console.log(error)
       console.log(`Geen nieuwe chats.`)
       res.status(200).json({error: `Geen nieuwe chats.`}).end()
     })
   }).catch((error) => {
     console.log(`Certificaat '${cert}' is ongeldig.`)
+    console.log(error)
     res.status(400).json({error: `Certificaat '${cert}' is ongeldig.`}).end()
   })
 }
