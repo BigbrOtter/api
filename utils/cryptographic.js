@@ -37,10 +37,14 @@ const createSignature = (data, privateKey) => {
 const decryptCert = (cert, publicKey) => {
   return new Promise((resolve, reject) => {
     const objectPublicPem = new NodeRSA(publicKey)
+<<<<<<< HEAD
     const decrypted = objectPublicPem.decryptPublic(cert, 'utf-8').catch((error)=>{
       console.log(error);
       reject(error)
     })
+=======
+    const decrypted = objectPublicPem.decryptPublic(cert, 'utf-8')
+>>>>>>> af5fe85791c61a1a99b9b4a58dc29b2e45a5bfb5
     resolve(decrypted)
     console.log(decrypted)
   })
@@ -52,7 +56,7 @@ const decryptCert = (cert, publicKey) => {
 */
 const readServerKey = (type) => {
   const privateKey = process.env.privateKey || fs.readFileSync(`./certificate/private.pem`, {encoding: 'utf-8'})
-  const publicKey = process.env.privateKey || fs.readFileSync(`./certificate/private.pem`, {encoding: 'utf-8'})
+  const publicKey = process.env.publicKey || fs.readFileSync(`./certificate/public.pem`, {encoding: 'utf-8'})
   return type === 'private' ? privateKey : publicKey
 }
 

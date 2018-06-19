@@ -2,6 +2,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const bodyparser = require('body-parser')
 const dotenv = require('dotenv')
+const cors = require('cors')
 const routes = require('./routes')
 
 const app = express()
@@ -21,12 +22,10 @@ mongoose.connect(`mongodb://${DBUSER}:${DBPASS}@${DBHOST}:${DBPORT}/${DBNAME}`).
 app.use(bodyparser.json())
 app.use(bodyparser.urlencoded({ extended: true }))
 
-// Routes
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*')
-  next()
-})
+// Use CORS
+app.use(cors())
 
+// Routes
 app.use('', routes)
 
 /*
