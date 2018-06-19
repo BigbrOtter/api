@@ -4,7 +4,7 @@ const { decryptCert, readServerKey } = require('../../utils/cryptographic')
 function getStreams (req, res) {
     const cert = req.headers.cert
     console.log(cert);
-    verifyAuth(cert).then((res) => {
+    verifyAuth(cert).then((result) => {
         res.status(200).json({error: "Succes!"})
         // Stream.find().toArray(function(err, streams) {
         //     console.log(streams);
@@ -35,21 +35,18 @@ function delStream (req, res) {
 
 const verifyAuth = (encryted) => {
     return new Promise(function(resolve, reject) {
-        console.log(encryted);
       var serverKey = readServerKey('public');
-      console.log(serverKey);
       decryptCert(encryted, serverKey).then((publicKey) => {
-          console.log(publicKey);
-        Stream.find({auth: publicKey}).then((user, error) => {
+        User.find({public: publicKey}).then((user, error) => {
             if (error){
                 reject("Denied")
-            }
-            else{
-            console.log("Found the following user: " + user);
-            authorized = true;
-            resolve("Ok");
-        }
+            } else{
+                authorized = true;
+                resolve("Ok");
+            }   
         })    
+      }).catch((error) => {
+        reject("User cert not correct")
       })      
     })
   }
