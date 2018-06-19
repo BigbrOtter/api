@@ -49,8 +49,7 @@ function postStream (req, res) {
         })
         newStream.save((err) => {
           if (err) throw err
-          console.log(`user saved!`)
-          res.status(200).json({message: 'Succes!'})
+          res.status(200).json({message: 'Succes!', stream: newStream})
         }, () => {
           res.status(400).json({error: 'User not found'})
         })
