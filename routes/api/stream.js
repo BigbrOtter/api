@@ -7,8 +7,8 @@ const streamController = require('../../controllers/api/stream')
 
 // Begin Stream Endpoints
 router.post('', streamController.postStream)
-router.get('', streamController.getStream)
-router.get(':streamId', streamController.getStreams)
+router.get('', streamController.getStreams)
+router.get(':streamId', streamController.getStream)
 router.delete(':streamId', streamController.delStream)
 // End Stream Endpoints
 

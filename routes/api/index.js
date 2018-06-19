@@ -8,7 +8,7 @@ const streamRoutes = require('./stream')
 
 // Use Routes
 router.use('/chat', chatRoutes)
-router.use('/stream', streamRoutes)
+router.use('/streams', streamRoutes)
 
 // Export Routes
 module.exports = router

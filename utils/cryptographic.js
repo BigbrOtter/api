@@ -38,9 +38,11 @@ const decryptCert = (cert, publicKey) => {
   return new Promise((resolve, reject) => {
     const objectPublicPem = new NodeRSA(publicKey)
     const decrypted = objectPublicPem.decryptPublic(cert, 'utf-8').catch((error)=>{
+      console.log(error);
       reject(error)
     })
     resolve(decrypted)
+    console.log(decrypted)
   })
 }
 
