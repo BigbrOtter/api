@@ -37,10 +37,12 @@ const createSignature = (data, privateKey) => {
 const decryptCert = (cert, publicKey) => {
   return new Promise((resolve, reject) => {
     const objectPublicPem = new NodeRSA(publicKey)
-    const decrypted = objectPublicPem.decryptPublic(cert, 'utf-8').catch((error) => {
-      reject("User cert not correct")
-    })
-    resolve(decrypted)
+    try {
+      const decrypted = objectPublicPem.decryptPublic(cert, 'utf-8')
+      resolve(decrypted)
+    } catch (e) {
+      reject(Error('User cert not correct'))
+    }
   })
 }
 
