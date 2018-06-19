@@ -107,7 +107,8 @@ function getChats (req, res) {
       createSignature(JSON.stringify(chatArray), readServerKey('private')).then((signature) => {
         res.status(200).json({
           chats: chatArray,
-          signature: signature
+          signature: signature,
+          tempHash: crypto.createHash('sha256').update(JSON.stringify(chatArray)).digest('hex'), // TEMP, DEBUG, REMOVE IF PRODUCTION.
         }).end()
       }).catch((error) => {
         console.log(`Error making the signature for the chats.`)
