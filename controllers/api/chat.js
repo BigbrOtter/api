@@ -1,5 +1,5 @@
 const crypto = require('crypto')
-const { decryptCert, decryptSignature, readServerKey } = require('../../utils/cryptographic')
+const { decryptCert, decryptSignature, readServerKey, createSignature } = require('../../utils/cryptographic')
 const { User, Chat } = require('../../models')
 
 /* Maakt een nieuw chatbericht aan.
@@ -85,5 +85,47 @@ function getChat (req, res) {
   })
 }
 
+function getChats (req, res) {
+  const cert = req.headers.cert
+  // Kijken of het certificaat geldig is, of het een user van TheCircle is.
+  decryptCert(cert, readServerKey('public')).then((publicKey) => {
+    // Chatberichten zoeken op basis van laatste timestamp vanuit de client
+    let timestamp = req.headers.timestamp
+    if (typeof timestamp === 'undefined') {
+      timestamp = '0'
+    }
+    const streamer = parseInt(req.headers.streamer)
+    Chat.aggregate([{$match: {streamer: streamer, timestamp: {$gt: timestamp}}}, {$lookup: {from: 'users', localField: 'bsn', foreignField: 'bsn', as: 'user'}}]).then((chats) => {
+      let chatArray = []
+      chats.forEach((chat) => {
+        chatArray.push({
+          message: chat.message,
+          timestamp: chat.timestamp,
+          name: chat.user[0].naam
+        })
+      })
+      createSignature(JSON.stringify(chatArray), readServerKey('private')).then((signature) => {
+        res.status(200).json({
+          chats: chatArray,
+          signature: signature,
+          tempHash: crypto.createHash('sha256').update(JSON.stringify(chatArray)).digest('hex'), // TEMP, DEBUG, REMOVE IF PRODUCTION.
+        }).end()
+      }).catch((error) => {
+        console.log(error)
+        console.log(`Error making the signature for the chats.`)
+        res.status(400).json({error: `Error making the signature for the chats.`}).end()
+      })
+    }).catch((error) => {
+      console.log(error)
+      console.log(`Geen nieuwe chats.`)
+      res.status(200).json({error: `Geen nieuwe chats.`}).end()
+    })
+  }).catch((error) => {
+    console.log(`Certificaat '${cert}' is ongeldig.`)
+    console.log(error)
+    res.status(400).json({error: `Certificaat '${cert}' is ongeldig.`}).end()
+  })
+}
+
 // Export methods
-module.exports = { postChat, getChat }
+module.exports = { postChat, getChat, getChats }
