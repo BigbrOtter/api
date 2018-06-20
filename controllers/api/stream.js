@@ -1,4 +1,4 @@
-const { User, Stream } = require('../../models')
+const { User, Stream, Activity } = require('../../models')
 const { decryptCert, readServerKey } = require('../../utils/cryptographic')
 const crypto = require('crypto')
 
@@ -10,7 +10,15 @@ function getStreams (req, res) {
           if(error) {
               res.status(400).json({error: 'Something went wrong'})
           } else {
-              res.status(200).json(streams)
+            const newActivity = new Stream({
+                user: user._id,
+                timestamp: Date.Now() + "",
+                activity: "Get all streams"
+              })
+              newActivity.save((err) => {
+                if (err) throw err       
+                res.status(200).json(streams)
+              })  
           }
       })
   }, () => {
@@ -26,7 +34,15 @@ function getStream (req, res) {
             if(error) {
                 res.status(400).json({error: "Could not find stream"})
             } else {
-                res.status(200).json(stream)
+                const newActivity = new Stream({
+                    user: user._id,
+                    timestamp: Date.Now() + "",
+                    activity: "Get stream:" + stream._id
+                  })
+                  newActivity.save((err) => {
+                    if (err) throw err       
+                    res.status(200).json(streams)
+                  })  
 }
         })
     }), () => {
@@ -35,9 +51,6 @@ function getStream (req, res) {
 }
 
 function postStream (req, res) {
-//   var key = req.body.key
-//   var stream = req.body.stream
-//   var auth = req.body.auth
   const cert = req.headers.cert  
   verifyAuth(cert).then((user) => {
     Stream.findOne({user: user._id}).then((stream, error) => {
@@ -86,7 +99,7 @@ const verifyAuth = (encryted) => {
     // }
     decryptCert(encryted, readServerKey('public')).then((publicKey) => {
         console.log(publicKey)
-      User.findOne({public: publicKey}).then((user, error) => {
+      User.findOne({public: publicKey}).then((error,) => {
         if (error || user === null) {
           reject(Error('Denied'))
         } else {
