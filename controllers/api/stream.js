@@ -6,13 +6,15 @@ const crypto = require('crypto')
 function getStreams (req, res) {
   const cert = req.headers.cert
   verifyAuth(cert).then((user) => {
-    Stream.find({}).then((streams, error) => {
-      if (error) {
-        res.status(400).json({error: 'Something went wrong'})
-      } else {
-        res.status(200).json(streams)
-      }
-    })
+    Stream.find({})
+      .populate({ path: 'user', select: '_id naam' })
+      .then((streams, error) => {
+        if (error) {
+          res.status(400).json({error: 'Something went wrong'})
+        } else {
+          res.status(200).json(streams)
+        }
+      })
   }, () => {
     res.status(400).json({error: 'User not found'})
   })
@@ -22,24 +24,26 @@ function getStream (req, res) {
   const cert = req.headers.cert
   const streamKey = req.params.streamId
   verifyAuth(cert).then((user) => {
-    Stream.findOne({_id: streamKey}).then((stream, error) => {
-      if (error) {
-        res.status(400).json({error: 'Could not find stream'})
-      } else {
-        const newActivity = new Activity({
-          user: user._id,
-          timestamp: Date.now() + '',
-          activity: 'Get stream:' + '' + stream._id
-        })
-        newActivity.save((err) => {
-          if (err) {
-            res.status(400).json({error: 'Something went wrong'})
-          } else {
-            res.status(200).json(stream)
-          }
-        })
-      }
-    })
+    Stream.findOne({_id: streamKey})
+      .populate({ path: 'user', select: '_id naam' })
+      .then((stream, error) => {
+        if (error) {
+          res.status(400).json({error: 'Could not find stream'})
+        } else {
+          const newActivity = new Activity({
+            user: user._id,
+            timestamp: Date.now() + '',
+            activity: 'Get stream:' + '' + stream._id
+          })
+          newActivity.save((err) => {
+            if (err) {
+              res.status(400).json({error: 'Something went wrong'})
+            } else {
+              res.status(200).json(stream)
+            }
+          })
+        }
+      })
   }, () => {
     res.status(400).json({error: 'User not found'})
   })
