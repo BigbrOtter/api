@@ -47,7 +47,7 @@ function getStream (req, res) {
         })
     }), () => {
     res.status(400).json({error: 'User not found'})
-  })
+  }
 }
 
 function postStream (req, res) {
