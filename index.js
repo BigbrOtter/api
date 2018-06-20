@@ -36,3 +36,14 @@ const serverPort = process.env.PORT || 80
 app.listen(serverPort, () => {
   console.log(`Server online op poort ${serverPort}, ${new Date()}`)
 })
+
+const server = require('http').createServer(app)
+const io = require('socket.io')(server)
+const socketPort = process.env.SOCKETPORT || 3000
+io.on('connection', (client) => {
+  console.log('connected client')
+  client.on('disconnect', () => {
+    console.log('disconnected client')
+  })
+})
+server.listen(socketPort)
