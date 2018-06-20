@@ -10,15 +10,7 @@ function getStreams (req, res) {
       if (error) {
         res.status(400).json({error: 'Something went wrong'})
       } else {
-        const newActivity = new Stream({
-          user: user._id,
-          timestamp: Date.now() + '',
-          activity: 'Get all streams'
-        })
-        newActivity.save((err) => {
-          if (err) throw err
-          res.status(200).json(streams)
-        })
+         res.status(200).json(streams)        
       }
     })
   }, () => {
@@ -37,11 +29,14 @@ function getStream (req, res) {
         const newActivity = new Activity({
           user: user._id,
           timestamp: Date.now() + '',
-          activity: 'Get stream:' + stream._id
+          activity: 'Get stream:' + '' + stream._id
         })
         newActivity.save((err) => {
-          if (err) throw err
+          if (err) {
+            res.status(400).json({error: 'Something went wrong'})
+          }else {
           res.status(200).json(stream)
+        }
         })
       }
     })
@@ -64,13 +59,27 @@ function postStream (req, res) {
           url: ''
         })
         newStream.save((err) => {
-          if (err) throw err
-          res.status(200).json({message: 'Succes!', stream: newStream})
-        }, () => {
-          res.status(400).json({error: 'User not found'})
-        })
+          if (err) {
+            res.status(400).json({error: 'Something went wrong'})
+          }else {
+          const newActivity = new Activity({
+            user: user._id,
+            timestamp: Date.now() + '',
+            activity: 'Post stream:' + '' + stream._id
+          })
+          newActivity.save((err) => {
+            if (err) {
+              res.status(400).json({error: 'Something went wrong'})
+            }else {
+            res.status(200).json({stream: newStream})
+          }
+          })
+        }
+        })       
       }
     })
+    }, () => {
+    res.status(400).json({error: 'User not found'})
   })
 }
 
