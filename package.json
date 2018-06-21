@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "mocha --exit"
+    "test": "node node_modules/mocha/bin/_mocha ./test/* --reporter spec --exit"
   },
   "repository": {
     "type": "git",
