@@ -7,7 +7,6 @@ const chatController = require('../../controllers/api/chat')
 
 // Begin Chat Endpoints
 router.post('', chatController.postChat)
-router.get('/old', chatController.getChat)
 router.get('', chatController.getChats)
 // End Chat Endpoints
 

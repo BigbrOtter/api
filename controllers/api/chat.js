@@ -55,36 +55,6 @@ function postChat (req, res) {
 * @param {String} timestamp (timestamp van het laatste bericht dat je ontvangen hebt)
 * @param {Number} streamer (BSN van welke transparant persoon je aan het bekijken bent)
 */
-function getChat (req, res) {
-  const cert = req.headers.cert
-  // Kijken of het certificaat geldig is, of het een user van TheCircle is.
-  decryptCert(cert, readServerKey('public')).then((publicKey) => {
-    // Chatberichten zoeken op basis van laatste timestamp vanuit de client
-    let timestamp = req.headers.timestamp
-    if (typeof timestamp === 'undefined') {
-      timestamp = '0'
-    }
-    const streamer = parseInt(req.headers.streamer)
-    Chat.aggregate([{$match: {streamer: streamer, timestamp: {$gt: timestamp}}}, {$lookup: {from: 'users', localField: 'bsn', foreignField: 'bsn', as: 'user'}}]).then((chats) => {
-      let chatArray = []
-      chats.forEach((chat) => {
-        chatArray.push({
-          message: chat.message,
-          timestamp: chat.timestamp,
-          name: chat.user[0].naam
-        })
-      })
-      res.status(200).json(chatArray).end()
-    }).catch((error) => {
-      console.log(`Geen nieuwe chats.`)
-      res.status(200).json({error: `Geen nieuwe chats.`}).end()
-    })
-  }).catch((error) => {
-    console.log(`Certificaat '${cert}' is ongeldig.`)
-    res.status(400).json({error: `Certificaat '${cert}' is ongeldig.`}).end()
-  })
-}
-
 function getChats (req, res) {
   const cert = req.headers.cert
   // Kijken of het certificaat geldig is, of het een user van TheCircle is.
@@ -95,8 +65,16 @@ function getChats (req, res) {
       timestamp = '0'
     }
     const streamer = req.headers.streamer
+    if (typeof streamer === 'undefined') {
+      res.status(400).json({'error': 'streamer is required'}).end()
+      return
+    }
     Chat.aggregate([{$match: {streamer: streamer, timestamp: {$gt: timestamp}}}, {$lookup: {from: 'users', localField: 'bsn', foreignField: 'bsn', as: 'user'}}]).then((chats) => {
       let chatArray = []
+      if (chatArray.length === 0) {
+        res.status(200).json({'error': 'geen nieuwe chats'}).end()
+        return
+      }
       chats.forEach((chat) => {
         chatArray.push({
           message: chat.message,
@@ -128,4 +106,4 @@ function getChats (req, res) {
 }
 
 // Export methods
-module.exports = { postChat, getChat, getChats }
+module.exports = { postChat, getChats }
