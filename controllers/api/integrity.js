@@ -37,10 +37,8 @@ function handleGet (req, res) {
     return
   }
   const content = fs.readFileSync(filename, {encoding: 'utf8'})
-  console.log(content)
   const signature = JSON.parse(content).signature
-  console.log(signature)
-  // fs.unlinkSync(filename)
+  fs.unlinkSync(filename)
   res.status(200).json({signature: signature}).end()
 }
 
