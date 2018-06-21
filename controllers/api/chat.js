@@ -71,7 +71,7 @@ function getChats (req, res) {
     }
     Chat.aggregate([{$match: {streamer: streamer, timestamp: {$gt: timestamp}}}, {$lookup: {from: 'users', localField: 'bsn', foreignField: 'bsn', as: 'user'}}]).then((chats) => {
       let chatArray = []
-      if (chatArray.length === 0) {
+      if (chats.length === 0) {
         res.status(200).json({'error': 'geen nieuwe chats'}).end()
         return
       }
@@ -85,8 +85,7 @@ function getChats (req, res) {
       createSignature(JSON.stringify(chatArray), readServerKey('private')).then((signature) => {
         res.status(200).json({
           chats: chatArray,
-          signature: signature,
-          tempHash: crypto.createHash('sha256').update(JSON.stringify(chatArray)).digest('hex'), // TEMP, DEBUG, REMOVE IF PRODUCTION.
+          signature: signature
         }).end()
       }).catch((error) => {
         console.log(error)
