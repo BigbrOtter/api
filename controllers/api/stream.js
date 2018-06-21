@@ -60,7 +60,7 @@ function postStream (req, res) {
         const newStream = new Stream({
           key: hash,
           user: user._id,
-          url: `http://37.97.244.58:8000/live/${hash}/index.m3u8`
+          url: `http://167.99.214.15:8000/live/${hash}/index.m3u8`
         })
         newStream.save((err) => {
           if (err) {
