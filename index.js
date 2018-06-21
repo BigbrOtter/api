@@ -36,3 +36,5 @@ const serverPort = process.env.PORT || 80
 app.listen(serverPort, () => {
   console.log(`Server online op poort ${serverPort}, ${new Date()}`)
 })
+
+module.exports = app
