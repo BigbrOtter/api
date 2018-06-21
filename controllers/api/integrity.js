@@ -4,6 +4,7 @@ const path = require('path')
 function handlePost (req, res) {
   const streamID = req.body.streamID
   const timestamp = req.body.timestamp
+  console.log(req.body);
   if (typeof streamID === 'undefined') {
     res.status(400).json({error: 'streamID is undefined'}).end()
     return

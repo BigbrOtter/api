@@ -75,7 +75,7 @@ function postStream (req, res) {
               if (err) {
                 res.status(400).json({error: 'Something went wrong'})
               } else {
-                res.status(200).json({stream: newStream, stream_url: `rtmp://37.97.244.58:1935/live/${hash}`})
+                res.status(200).json({stream: newStream, stream_url: `rtmp://167.99.214.15:1935/live/${hash}`})
               }
             })
           }
