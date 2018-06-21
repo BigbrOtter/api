@@ -7,7 +7,7 @@ const integrityController = require('../../controllers/api/integrity')
 
 // Begin Chat Endpoints
 router.post('', integrityController.handlePost)
-router.get('', integrityController.handleGet)
+router.get('/:file', integrityController.handleGet)
 // End Chat Endpoints
 
 // Export Routes

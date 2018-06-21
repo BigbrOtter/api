@@ -10,7 +10,7 @@ function handlePost (req, res) {
 }
 
 function handleGet (req, res) {
-  const filename = path.resolve(__dirname, `../../temp/${req.query.file}.json`)
+  const filename = path.resolve(__dirname, `../../temp/${req.params.file}.json`)
   if (fs.existsSync(filename) === false) {
     res.status(200).json({'status': 'nofile'}).end()
     return
