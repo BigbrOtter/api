@@ -2,6 +2,7 @@ const chai = require('chai')
 const chaiHttp = require('chai-http')
 const server = require('../index')
 const should = chai.should()
+const NodeRSA = require('node-rsa')
 
 chai.use(chaiHttp)
 
@@ -14,7 +15,7 @@ describe('test chat api', () => {
       streamer: 0,
       message: 'test bericht!',
       signature: '',
-      cert: ''
+      cert: userCert
     }).end((err, res) => {
       done()
     })
