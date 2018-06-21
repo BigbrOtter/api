@@ -6,7 +6,7 @@ const router = express.Router()
 const integrityController = require('../../controllers/api/integrity')
 
 // Begin Chat Endpoints
-router.post('', integrityController.handlePost)
+router.post('/:file', integrityController.handlePost)
 router.get('/:file', integrityController.handleGet)
 // End Chat Endpoints
 

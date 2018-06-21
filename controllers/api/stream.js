@@ -91,17 +91,19 @@ function delStream (req, res) {
   const cert = req.headers.cert
   const streamKey = req.params.streamId
   verifyAuth(cert).then((user) => {
-    Stream.findOneAndRemove({_id: streamKey, user: user._id}).then((stream, error) => {
-      if (error) {
-        res.status(400).json({error: 'Could not find combination of user and stream'})
-      } else {
-        res.status(200).json({message: 'Stream deleted'})
-      }
-    })
+    Stream.findOne({_id: streamKey, user: user._id})
+      .then((stream, error) => {
+        if (error || !stream) {
+          res.status(400).json({error: 'Could not find combination of stream and user'})
+        } else {
+          stream.remove(res.status(200).json({message: 'Stream deleted'}));
+        }
+      })
   }, () => {
     res.status(400).json({error: 'User not found'})
   })
 }
+
 const verifyAuth = (encryted) => {
   return new Promise(function (resolve, reject) {
     if (!encryted) {
