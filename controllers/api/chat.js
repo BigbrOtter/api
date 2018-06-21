@@ -94,7 +94,7 @@ function getChats (req, res) {
     if (typeof timestamp === 'undefined') {
       timestamp = '0'
     }
-    const streamer = parseInt(req.headers.streamer)
+    const streamer = req.headers.streamer
     Chat.aggregate([{$match: {streamer: streamer, timestamp: {$gt: timestamp}}}, {$lookup: {from: 'users', localField: 'bsn', foreignField: 'bsn', as: 'user'}}]).then((chats) => {
       let chatArray = []
       chats.forEach((chat) => {
