@@ -15,7 +15,6 @@ const DBNAME = process.env.DBNAME
 
 chai.use(chaiHttp)
 
-const wrongUserCert = process.env.testWrongUserCert
 const userCert = process.env.testUserCert
 const userPrivate = process.env.testUserPrivateKey
 
@@ -31,6 +30,7 @@ describe('test chat api', () => {
       cert: userCert
     }
     chai.request(server).post('/api/chat').set('content-type', 'application/x-www-form-urlencoded').send(body).end((err, res) => {
+      if (err) throw err
       res.should.have.status(200)
       res.body.status.should.equal('OK')
       chat = res.body.chat
@@ -39,22 +39,23 @@ describe('test chat api', () => {
   })
   it('successful chats ophalen', (done) => {
     chai.request(server).get('/api/chat').set('cert', userCert).set('timestamp', chat.timestamp - 1).set('streamer', chat.bsn).end((err, res) => {
+      if (err) throw err
       res.should.have.status(200)
-      console.log(res.body)
-      console.log(res.body.chats)
+      res.body.chats.should.be.a('array')
+      res.body.chats[0].should.be.a('object')
       done()
     })
   })
 })
 
-  describe('test stream api', () => {
-    var streamId;
-    it('Succesvol ophalen van alle steams', (done) => {
-      chai.request(server).get('/api/streams').set('cert', userCert).end((err,res) => {
-      if (err) throw err
-      res.should.have.status(200)
-      res.body.should.be.a("array")
-      done()
+describe('test stream api', () => {
+  var streamId;
+  it('Succesvol ophalen van alle steams', (done) => {
+    chai.request(server).get('/api/streams').set('cert', userCert).end((err,res) => {
+    if (err) throw err
+    res.should.have.status(200)
+    res.body.should.be.a("array")
+    done()
     })
   })
   it('Succesvol aanmaken van een stream', (done) => {
@@ -79,7 +80,7 @@ describe('test chat api', () => {
       if (err) throw err
       res.should.have.status(200)
       res.body.should.be.a("object")
-      res.body.message.should.equals('Stream deleted')      
+      res.body.message.should.equals('Stream deleted')
       done()
     })
   })
@@ -88,16 +89,16 @@ describe('test chat api', () => {
       if (err) throw err
       res.should.have.status(400)
       res.body.should.be.a("object")
-      res.body.error.should.equals('User not found')      
+      res.body.error.should.equals('User not found')
       done()
     })
   })
   it('Stream verwijderen met verkeerde certificaat', (done) => {
-    chai.request(server).delete(`/api/streams/${streamId}`).set('cert', wrongUserCert).end((err, res) => {
+    chai.request(server).delete(`/api/streams/${streamId}`).set('cert', 'fakeCertificaat').end((err, res) => {
       if (err) throw err
       res.should.have.status(400)
-      res.body.should.be.a("object") 
-      res.body.error.should.equals('Could not find combination of stream and user')    
+      res.body.should.be.a('object')
+      res.body.error.should.equals('User not found')
       done()
     })
   })
